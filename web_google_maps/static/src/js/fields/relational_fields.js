@@ -5,7 +5,7 @@ odoo.define('web_google_maps.relational_fields', function (require) {
 
     var qweb = core.qweb;
 
-    relational_fields.FieldOne2Many.include({
+    relational_fields.FieldX2Many.include({
         init: function () {
             this._super.apply(this, arguments);
             if (this.view && this.view.arch.tag === 'google_map') {

@@ -281,6 +281,14 @@ odoo.define('web_google_maps.MapRenderer', function (require) {
          *
          */
         _initMarkerCluster: function () {
+            if (!this.markerClusterConfig) {
+                this.markerClusterConfig = {
+                    gridSize: 40,
+                    maxZoom: 7,
+                    zoomOnClick: true,
+                    imagePath: '/web_google_maps/static/lib/markercluster/img/m',
+                };
+            }
             if (!this.markerClusterConfig.imagePath) {
                 this.markerClusterConfig.imagePath = '/web_google_maps/static/lib/markercluster/img/m';
             }
