@@ -40,6 +40,9 @@ odoo.define('web_google_maps.relational_fields', function (require) {
                 fieldLng: arch.attrs.lng,
                 markerColor: arch.attrs.color,
                 mapMode: this.mapMode,
+                routing: arch.attrs.routing,
+                routingFieldGroupBy: arch.attrs.routing_group_by,
+                routingFieldSequence: arch.attrs.routing_sequence,
             });
         },
         /**
