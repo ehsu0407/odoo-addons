@@ -72,6 +72,9 @@ odoo.define('web_google_maps.relational_fields', function (require) {
                 googleMapStyle: arch.attrs.map_style,
                 sidebarTitle: arch.attrs.sidebar_title,
                 sidebarSubtitle: arch.attrs.sidebar_subtitle,
+                routing: arch.attrs.routing,
+                routingFieldGroupBy: arch.attrs.routing_group_by,
+                routingFieldSequence: arch.attrs.routing_sequence,
             });
         },
         /**

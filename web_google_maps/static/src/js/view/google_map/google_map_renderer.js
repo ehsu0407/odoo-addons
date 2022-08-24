@@ -198,6 +198,9 @@ odoo.define('web_google_maps.GoogleMapRenderer', function (require) {
             this.sidebarTitle = params.sidebarTitle;
             this.sidebarSubtitle = params.sidebarSubtitle;
             this.disableNavigation = params.disableNavigation;
+            this.routing = params.routing;
+            this.routingFieldGroupBy = params.routingFieldGroupBy;
+            this.routingFieldSequence = params.routingFieldSequence;
         },
         /**
          * @override
@@ -347,6 +350,21 @@ odoo.define('web_google_maps.GoogleMapRenderer', function (require) {
             return marker;
         },
         /**
+         * Draws a polyline
+         * @param {any} path
+         * @param {string} color
+         */
+        _drawPolyLine: function (path, color) {
+            var options = {
+                path: path,
+                strokeColor: color,
+                strokeOpacity: 0.6,
+                strokeWeight: 4
+            };
+            var line = new google.maps.Polyline(options);
+            line.setMap(this.gmap);
+        },
+        /**
          * Get marker icon color path
          * @param {String} color
          * DEPRECATED
@@ -367,7 +385,7 @@ odoo.define('web_google_maps.GoogleMapRenderer', function (require) {
             if (markers.length > 0) {
                 const position = marker.getPosition();
                 markers.forEach((_cMarker) => {
-                    if (position && position.equals(_cMarker.getPosition())) {
+                    if (marker !== _cMarker && position && position.equals(_cMarker.getPosition())) {
                         marker.setMap(null);
                         existingRecords.push(_cMarker._odooRecord);
                     }
@@ -448,17 +466,50 @@ odoo.define('web_google_maps.GoogleMapRenderer', function (require) {
          * @param {Object} record
          */
         _renderMarkers: function () {
+            let self = this;
             let color, lat, lng, latLng, marker;
-            this.state.data.forEach((record) => {
-                color = this._getIconColor(record);
-                lat = typeof record.data[this.fieldLat] === 'number' ? record.data[this.fieldLat] : 0.0;
-                lng = typeof record.data[this.fieldLng] === 'number' ? record.data[this.fieldLng] : 0.0;
-                if (lat !== 0.0 || lng !== 0.0) {
-                    latLng = new google.maps.LatLng(lat, lng);
-                    marker = this._createMarker(latLng, record, color);
-                    this._onMarkerClusterAddMarker(marker);
+            if(this.routing) {
+                var data = this.state.data
+                if(self.routingFieldSequence) {
+                    data = _.sortBy(data, function(record) {
+                        return record.data[self.routingFieldSequence]
+                    })
                 }
-            });
+                if(self.routingFieldGroupBy) {
+                    data = _.groupBy(data, function(record) {
+                        return record.data[self.routingFieldGroupBy].data.id
+                    })
+                } else {
+                    data = {0: data}
+                }
+
+                var color_idx = 0;
+                _.map(data, function(routing_lines, vehicle) {
+                    color = MARKER_COLORS[color_idx]
+                    var path = [];
+                    _.each(routing_lines, function(line) {
+                        lat = typeof line.data[self.fieldLat] === 'number' ? line.data[self.fieldLat] : 0.0;
+                        lng = typeof line.data[self.fieldLng] === 'number' ? line.data[self.fieldLng] : 0.0;
+                        latLng = new google.maps.LatLng(lat, lng);
+                        marker = self._createMarker(latLng, line, color);
+                        self._onMarkerClusterAddMarker(marker);
+                        path.push(latLng)
+                    });
+                    self._drawPolyLine(path, color);
+                    color_idx = (color_idx + 1) % MARKER_COLORS.length
+                })
+            } else {
+                this.state.data.forEach((record) => {
+                    color = this._getIconColor(record);
+                    lat = typeof record.data[this.fieldLat] === 'number' ? record.data[this.fieldLat] : 0.0;
+                    lng = typeof record.data[this.fieldLng] === 'number' ? record.data[this.fieldLng] : 0.0;
+                    if (lat !== 0.0 || lng !== 0.0) {
+                        latLng = new google.maps.LatLng(lat, lng);
+                        marker = this._createMarker(latLng, record, color);
+                        this._onMarkerClusterAddMarker(marker);
+                    }
+                });
+            }
         },
         /**
          * Default location
