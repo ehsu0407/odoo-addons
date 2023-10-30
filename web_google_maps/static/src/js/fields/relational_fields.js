@@ -57,7 +57,7 @@ odoo.define('web_google_maps.relational_fields', function (require) {
             if (arch.attrs.icon_scale) {
                 iconScale = parseFloat(arch.attrs.icon_scale)
             }
-            this.rendererParams.markerIconScale = isNaN(iconScale) ? 1 : iconScale;
+            // this.rendererParams.markerIconScale = isNaN(iconScale) ? 1 : iconScale;
             const Renderer = this._getRenderer();
             return new Renderer(this, this.value, {
                 arch: arch,
